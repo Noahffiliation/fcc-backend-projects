@@ -7,6 +7,10 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const shortId = require('shortid');
 const { Schema } = mongoose;
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const csrf = require('csurf');
+const rateLimit = require('express-rate-limit');
 
 mongoose.connect(process.env['MONGO_URI'], { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -19,6 +23,11 @@ let URL = mongoose.model('URL', URLSchema);
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
+
+app.use(cookieParser());
+app.use(csrf({ cookie: true }));
+
+app.use(helmet());
 
 app.use(cors());
 
@@ -38,7 +47,7 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.get('/api/shorturl/:short_url?', function(req, res) {
-  let url = req.params.short_url;
+  let url = req.params.short_url.toString();
   URL.findOne({short_url: url}, function(err, data) {
     if (err) console.error(err);
     res.redirect(data.original_url);
@@ -46,7 +55,7 @@ app.get('/api/shorturl/:short_url?', function(req, res) {
 });
 
 app.post('/api/shorturl', function(req, res) {
-  let url = req.body.url;
+  let url = req.body.url.toString();
   if (!validUrl.isWebUri(url)){
     res.json({error: 'invalid url'})
   } else {

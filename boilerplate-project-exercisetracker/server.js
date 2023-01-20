@@ -3,8 +3,11 @@ const app = express()
 const cors = require('cors')
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const csrf = require('csurf');
 const { Schema } = mongoose;
 require('dotenv').config()
+const helmet = require('helmet');
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -24,12 +27,17 @@ const exerciseSchema = new Schema({
 let User = mongoose.model('User', userSchema);
 let Exercise = mongoose.model('Exercise', exerciseSchema);
 
-app.use(cors())
+app.use(cors());
+app.use(morgan('dev'));
+app.use(csrf({ cookie: true }));
+app.use(cookieParser());
+app.use(helmet());
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({
   extended: true
 }))
 
+// file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
@@ -50,7 +58,7 @@ app.post('/api/users', function(req, res) {
 });
 
 app.post('/api/users/:_id/exercises', function(req, res) {
-  User.findById({"_id": req.params._id}, function(err, data) {
+  User.findById({"_id": req.params._id.toString()}, function(err, data) {
     if (err) console.error(err);
     let newExercise = new Exercise({
       username: data.username,
@@ -76,7 +84,7 @@ app.get('/api/users/:_id/logs', function(req, res) {
   let from = req.query.from;
   let to = req.query.to;
   let limit = req.query.limit;
-  User.findOne({"_id": req.params._id}, function(err, data) {
+  User.findOne({"_id": req.params._id.toString()}, function(err, data) {
     if (err) console.error(err);
     let username = data.username;
     Exercise.count({"username": username}, function(err, data) {

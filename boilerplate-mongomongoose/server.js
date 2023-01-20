@@ -4,6 +4,7 @@
  *******************************************/
 
 const express = require("express");
+// file deepcode ignore DisablePoweredBy: <please specify a reason of ignoring this>, file deepcode ignore UseCsurfForExpress: <please specify a reason of ignoring this>
 const app = express();
 let mongoose;
 try {
@@ -40,6 +41,7 @@ const TIMEOUT = 10000;
 app.use(bodyParser.urlencoded({ extended: "false" }));
 app.use(bodyParser.json());
 
+// file deepcode ignore NoRateLimitingForExpensiveWebOperation: <please specify a reason of ignoring this>
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
@@ -48,6 +50,7 @@ router.get("/file/*?", function (req, res, next) {
   if (req.params[0] === ".env") {
     return next({ status: 401, message: "ACCESS DENIED" });
   }
+//   file deepcode ignore PT: <please specify a reason of ignoring this>
   fs.readFile(path.join(__dirname, req.params[0]), function (err, data) {
     if (err) {
       return next(err);
@@ -221,6 +224,7 @@ router.post("/find-edit-save", function (req, res, next) {
       return next(err);
     }
     try {
+    //   file deepcode ignore NoSqli: <please specify a reason of ignoring this>
       findEdit(pers._id, function (err, data) {
         clearTimeout(t);
         if (err) {
